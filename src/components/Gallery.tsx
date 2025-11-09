@@ -69,6 +69,12 @@ const Gallery = () => {
         </div>
 
         <div className="text-center mt-12">
+          <a
+            href="#"
+            className="inline-flex items-center px-6 py-3 mb-6 bg-muted text-foreground font-semibold rounded-lg hover:bg-muted/80 transition-colors"
+          >
+            View More Photos
+          </a>
           <p className="text-lg text-muted-foreground mb-6">
             Have a project in mind? Let's discuss how we can help bring your vision to life.
           </p>

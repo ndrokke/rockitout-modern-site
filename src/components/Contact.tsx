@@ -14,6 +14,7 @@ const Contact = () => {
     email: "",
     phone: "",
     service: "",
+    location: "",
     message: ""
   });
 
@@ -21,7 +22,7 @@ const Contact = () => {
     e.preventDefault();
     
     // Simple form validation
-    if (!formData.name || !formData.phone || !formData.message) {
+    if (!formData.name || !formData.phone || !formData.location || !formData.message) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
@@ -42,6 +43,7 @@ const Contact = () => {
       email: "",
       phone: "",
       service: "",
+      location: "",
       message: ""
     });
   };
@@ -112,8 +114,7 @@ const Contact = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-1 text-foreground">
-                  <p>Monday - Friday: 7:00 AM - 6:00 PM</p>
-                  <p>Saturday: 8:00 AM - 4:00 PM</p>
+                  <p>Monday - Saturday: 7:00 AM - 4:00 PM</p>
                   <p>Sunday: Emergency calls only</p>
                 </div>
               </CardContent>
@@ -190,8 +191,22 @@ const Contact = () => {
                       <option value="repair">Drywall Repair</option>
                       <option value="texture">Texture & Finishing</option>
                       <option value="commercial">Commercial Project</option>
+                      <option value="emergency">Emergency Services</option>
                       <option value="other">Other</option>
                     </select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="location">Project Location *</Label>
+                    <Input
+                      id="location"
+                      name="location"
+                      value={formData.location}
+                      onChange={handleChange}
+                      placeholder="City or address in Iowa"
+                      required
+                      className="mt-1"
+                    />
                   </div>
 
                   <div>

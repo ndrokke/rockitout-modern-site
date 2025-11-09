@@ -9,7 +9,7 @@ const Footer = () => {
           <div className="md:col-span-2">
             <h3 className="text-2xl font-bold mb-4">Rock It Out Drywall</h3>
             <p className="text-primary-foreground/80 mb-4 leading-relaxed">
-              Family-owned drywall contractor serving Iowa for over 10 years. 
+              Family-owned drywall contractor serving Iowa for over 20 years. 
               Professional installation, repair, and finishing services with 
               competitive pricing and guaranteed satisfaction.
             </p>

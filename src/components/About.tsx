@@ -3,7 +3,7 @@ import { CheckCircle, Users, Award, Clock } from "lucide-react";
 const About = () => {
   const stats = [
     { icon: Users, number: "200+", label: "Happy Customers" },
-    { icon: Award, number: "10+", label: "Years Experience" },
+    { icon: Award, number: "20+", label: "Years Experience" },
     { icon: Clock, number: "48hr", label: "Response Time" },
     { icon: CheckCircle, number: "100%", label: "Satisfaction Rate" }
   ];
@@ -18,7 +18,7 @@ const About = () => {
               Family-Owned, Iowa-Trusted
             </h2>
             <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-              Rock It Out Drywall has been serving Iowa families and businesses for over 10 years. 
+              Rock It Out Drywall has been serving Iowa families and businesses for over 20 years. 
               As a family-owned business, we understand the importance of quality work, fair pricing, 
               and treating every customer like family.
             </p>

@@ -35,7 +35,7 @@ const Hero = () => {
           </h1>
 
           <p className="text-xl text-primary-foreground/90 mb-8 leading-relaxed">
-            Family-owned drywall contractor with 10+ years of experience. 
+            Family-owned drywall contractor with 20+ years of experience. 
             From installation to repairs, we deliver quality work at competitive prices. 
             Bilingual service available.
           </p>
@@ -70,7 +70,7 @@ const Hero = () => {
             </div>
             <div className="flex items-center">
               <CheckCircle className="h-5 w-5 text-success mr-2" />
-              <span className="font-medium">10+ Years Experience</span>
+              <span className="font-medium">20+ Years Experience</span>
             </div>
           </div>
         </div>
