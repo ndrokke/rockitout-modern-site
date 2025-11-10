@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X } from "lucide-react";
-import IMG1 from "@/assets/IMG_ 1.jpg";
+import IMG1 from "@/assets/IMG_1.jpg";
 import IMG2 from "@/assets/IMG_2.jpg";
 import IMG3 from "@/assets/IMG_3.jpg";
 import IMG4 from "@/assets/IMG_4.jpg";
