@@ -3,6 +3,10 @@ import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+const emailFrom = Deno.env.get('EMAIL_FROM') || 'onboarding@resend.dev';
+const emailBusinessTo = Deno.env.get('EMAIL_BUSINESS_TO') || 'quotes@rockitoutdrywall.com';
+const customerEmailsEnabled = Deno.env.get('CUSTOMER_EMAILS_ENABLED') === 'true';
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -78,17 +82,21 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const businessEmail = await resend.emails.send({
-      from: "Rock It Out Drywall <onboarding@resend.dev>",
-      to: ["quotes@rockitoutdrywall.com"],
+      from: `Rock It Out Drywall <${emailFrom}>`,
+      to: [emailBusinessTo],
       subject: `New Quote Request from ${quoteData.name} - ${serviceDisplay}`,
       html: businessEmailHtml,
       replyTo: quoteData.email || undefined,
     });
 
-    console.log("Business email sent successfully:", businessEmail);
+    if (businessEmail.error) {
+      console.error("Business email failed:", businessEmail.error);
+    } else {
+      console.log("Business email sent successfully:", businessEmail.data);
+    }
 
-    // Send confirmation email to customer if they provided an email
-    if (quoteData.email) {
+    // Send confirmation email to customer if they provided an email and it's enabled
+    if (quoteData.email && customerEmailsEnabled) {
       const customerEmailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #333; border-bottom: 3px solid #4CAF50; padding-bottom: 10px;">
@@ -138,13 +146,17 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       const customerEmail = await resend.emails.send({
-        from: "Rock It Out Drywall <onboarding@resend.dev>",
+        from: `Rock It Out Drywall <${emailFrom}>`,
         to: [quoteData.email],
         subject: "We've Received Your Quote Request - Rock It Out Drywall",
         html: customerEmailHtml,
       });
 
-      console.log("Customer confirmation email sent successfully:", customerEmail);
+      if (customerEmail.error) {
+        console.error("Customer confirmation email failed:", customerEmail.error);
+      } else {
+        console.log("Customer confirmation email sent successfully:", customerEmail.data);
+      }
     }
 
     return new Response(
