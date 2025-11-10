@@ -5,10 +5,22 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { Phone, MapPin, Clock, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+const quoteSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  phone: z.string().trim().min(10, "Valid phone number is required").max(20, "Phone number must be less than 20 characters"),
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters").optional().or(z.literal("")),
+  service: z.string().max(50).optional(),
+  location: z.string().trim().min(1, "Location is required").max(200, "Location must be less than 200 characters"),
+  message: z.string().trim().min(10, "Please provide at least 10 characters").max(2000, "Message must be less than 2000 characters"),
+});
 
 const Contact = () => {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,34 +30,64 @@ const Contact = () => {
     message: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simple form validation
-    if (!formData.name || !formData.phone || !formData.location || !formData.message) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive"
+    setIsSubmitting(true);
+
+    try {
+      // Validate form data using Zod
+      const validatedData = quoteSchema.parse(formData);
+
+      console.log("Sending quote request...", validatedData);
+
+      // Call the edge function to send email
+      const { data, error } = await supabase.functions.invoke("send-quote-email", {
+        body: validatedData,
       });
-      return;
+
+      if (error) {
+        console.error("Error sending quote:", error);
+        throw error;
+      }
+
+      console.log("Quote sent successfully:", data);
+
+      toast({
+        title: "Quote Request Sent!",
+        description: "We'll contact you within 24 hours to discuss your project.",
+      });
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        service: "",
+        location: "",
+        message: ""
+      });
+    } catch (error: any) {
+      console.error("Error submitting form:", error);
+      
+      if (error instanceof z.ZodError) {
+        // Handle validation errors
+        const firstError = error.errors[0];
+        toast({
+          title: "Validation Error",
+          description: firstError.message,
+          variant: "destructive"
+        });
+      } else {
+        // Handle submission errors
+        toast({
+          title: "Error Sending Request",
+          description: "There was a problem sending your quote request. Please try again or call us directly at (319) 610-2050.",
+          variant: "destructive"
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Simulate form submission
-    toast({
-      title: "Quote Request Sent!",
-      description: "We'll contact you within 24 hours to discuss your project.",
-    });
-
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      service: "",
-      location: "",
-      message: ""
-    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -224,9 +266,17 @@ const Contact = () => {
 
                   <Button 
                     type="submit" 
+                    disabled={isSubmitting}
                     className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3"
                   >
-                    Send Quote Request
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Send Quote Request"
+                    )}
                   </Button>
 
                   <p className="text-sm text-muted-foreground text-center">
