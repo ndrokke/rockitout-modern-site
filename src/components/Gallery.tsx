@@ -1,34 +1,34 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X } from "lucide-react";
-import beforeAfter1 from "@/assets/before-after-1.jpg";
-import gallery1 from "@/assets/gallery-1.jpg";
-import gallery2 from "@/assets/gallery-2.jpg";
-import gallery3 from "@/assets/gallery-3.jpg";
+import IMG1 from "@/assets/IMG_1.jpg";
+import IMG2 from "@/assets/IMG_2.jpg";
+import IMG3 from "@/assets/IMG_3.jpg";
+import IMG4 from "@/assets/IMG_4.jpg";
 
 const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const projects = [
     {
-      image: beforeAfter1,
-      title: "Complete Wall Transformation",
-      description: "Before and after of a complete drywall renovation showing professional finish quality."
+      image: IMG1,
+      title: "Drywall for bathroom fans and light fixtures",
+      description: "Custom drywall renovation showing professional finish quality."
     },
     {
-      image: gallery1,
-      title: "Residential Living Room",
+      image: IMG2,
+      title: "Commercial Drywall Ceiling with Angled Finish",
+      description: "Professional, clean application for commercial ceiling project."
+    },
+    {
+      image: IMG3,
+      title: "Raised Ceiling with Light Fixtures",
       description: "Smooth drywall installation in modern residential space with perfect finish."
     },
     {
-      image: gallery2,
-      title: "Commercial Texture Work",
-      description: "Professional knock-down texture application for commercial ceiling project."
-    },
-    {
-      image: gallery3,
-      title: "Seamless Repair Work",
-      description: "Expert drywall repair that blends perfectly with existing wall surface."
+      image: IMG4,
+      title: "Drywall With Multiple Outlets",
+      description: "Expert drywall cuts for outlets that blends perfectly with existing wall surface."
     }
   ];
 
@@ -69,12 +69,6 @@ const Gallery = () => {
         </div>
 
         <div className="text-center mt-12">
-          <a
-            href="#"
-            className="inline-flex items-center px-6 py-3 mb-6 bg-muted text-foreground font-semibold rounded-lg hover:bg-muted/80 transition-colors"
-          >
-            View More Photos
-          </a>
           <p className="text-lg text-muted-foreground mb-6">
             Have a project in mind? Let's discuss how we can help bring your vision to life.
           </p>
