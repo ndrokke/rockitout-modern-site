@@ -29,7 +29,7 @@ const Hero = () => {
 
           <p className="text-xl text-primary-foreground/90 mb-8 leading-relaxed">
             Family-owned drywall contractor with 20+ years of experience. From installation to repairs, we deliver
-            quality work at competitive prices. Bilingual service available.
+            quality work at competitive prices.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
