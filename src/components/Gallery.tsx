@@ -12,7 +12,7 @@ const Gallery = () => {
   const projects = [
     {
       image: IMG1,
-      title: "Drywall for bathroom fans and light fixtures",
+      title: "Custom Drywall for Bathroom Fans and Light Fixtures",
       description: "Custom drywall renovation showing professional finish quality."
     },
     {
@@ -27,7 +27,7 @@ const Gallery = () => {
     },
     {
       image: IMG4,
-      title: "Drywall With Multiple Outlets",
+      title: "Drywall with Multiple Outlets",
       description: "Expert drywall cuts for outlets that blends perfectly with existing wall surface."
     }
   ];
