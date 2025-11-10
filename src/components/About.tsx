@@ -23,8 +23,8 @@ const About = () => {
               and treating every customer like family.
             </p>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              Our bilingual team is committed to clear communication and exceptional craftsmanship. 
-              From small repairs to large installations, we approach every project with the same 
+              Our team is committed to clear communication and exceptional craftsmanship. 
+              From small to large installations, custom drywall projects or emergency repair services, we approach every project with the same 
               dedication to excellence that has built our reputation across Iowa.
             </p>
 
@@ -36,7 +36,7 @@ const About = () => {
               </div>
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-success mr-3 flex-shrink-0" />
-                <span className="text-foreground">Bilingual service in English and Spanish</span>
+                <span className="text-foreground">Custom drywall work and specialty drywall finishes</span>
               </div>
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-success mr-3 flex-shrink-0" />
@@ -53,7 +53,7 @@ const About = () => {
               <p className="text-muted-foreground">
                 <strong>Headquartered in Raymond, IA</strong><br />
                 6215 Lafayette Rd, Raymond, IA 50667<br />
-                Serving Cedar Rapids, Iowa City, Marion, and surrounding communities
+                Serving Waterloo, Cedar Falls, and surrounding Cedar Valley communities.
               </p>
             </div>
           </div>
