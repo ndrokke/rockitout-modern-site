@@ -13,35 +13,33 @@ const Gallery = () => {
     {
       image: IMG1,
       title: "Custom Drywall for Bathroom Fans and Light Fixtures",
-      description: "Custom drywall renovation showing professional finish quality."
+      description: "Custom drywall renovation showing professional finish quality.",
     },
     {
       image: IMG2,
       title: "Commercial Drywall Ceiling with Angled Finish",
-      description: "Professional, clean application for commercial ceiling project."
+      description: "Professional, clean application for commercial ceiling project.",
     },
     {
       image: IMG3,
       title: "Raised Ceiling with Light Fixtures",
-      description: "Smooth drywall installation in modern residential space with perfect finish."
+      description: "Smooth drywall installation in modern residential space with perfect finish.",
     },
     {
       image: IMG4,
       title: "Drywall with Multiple Outlets",
-      description: "Expert drywall cuts for outlets that blends perfectly with existing wall surface."
-    }
+      description: "Expert drywall cut for outlets that blends perfectly with existing wall surface.",
+    },
   ];
 
   return (
     <section id="gallery" className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-            Our Work Gallery
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Our Work Gallery</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            See the quality and craftsmanship that sets Rock It Out Drywall apart. 
-            Every project is completed with attention to detail and professional results.
+            See the quality and craftsmanship that sets Rock It Out Drywall apart. Every project is completed with
+            attention to detail and professional results.
           </p>
         </div>
 
@@ -92,11 +90,7 @@ const Gallery = () => {
               <X className="h-5 w-5" />
             </button>
             {selectedImage && (
-              <img
-                src={selectedImage}
-                alt="Gallery image"
-                className="w-full h-auto max-h-[80vh] object-contain"
-              />
+              <img src={selectedImage} alt="Gallery image" className="w-full h-auto max-h-[80vh] object-contain" />
             )}
           </div>
         </DialogContent>
