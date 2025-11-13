@@ -52,20 +52,52 @@ const Contact = () => {
       console.log("Sending quote request...", validatedData);
 
       // Convert images to base64 for sending to edge function
-      const imageData = await Promise.all(
-        images.map(async (file) => {
-          const base64 = await new Promise<string>((resolve) => {
+      const imageDataPromises = images.map(async (file) => {
+        try {
+          const base64 = await new Promise<string | null>((resolve, reject) => {
             const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
+            reader.onloadend = () => {
+              const result = reader.result as string;
+              // Validate that we got a proper data URL
+              if (result && result.startsWith('data:')) {
+                console.log(`Successfully converted ${file.name} to base64`);
+                resolve(result);
+              } else {
+                console.error(`Invalid data URL for ${file.name}`);
+                reject(new Error(`Failed to convert ${file.name}`));
+              }
+            };
+            reader.onerror = () => {
+              console.error(`FileReader error for ${file.name}:`, reader.error);
+              reject(reader.error || new Error(`Failed to read ${file.name}`));
+            };
             reader.readAsDataURL(file);
           });
-          return {
+          
+          return base64 ? {
             name: file.name,
             type: file.type,
             data: base64
-          };
-        })
-      );
+          } : null;
+        } catch (error) {
+          console.error(`Error converting ${file.name}:`, error);
+          toast({
+            title: "Image Upload Warning",
+            description: `${file.name} could not be processed and will be skipped.`,
+            variant: "destructive"
+          });
+          return null;
+        }
+      });
+      
+      const imageDataResults = await Promise.all(imageDataPromises);
+      const imageData = imageDataResults.filter((img): img is NonNullable<typeof img> => img !== null);
+      
+      if (images.length > 0 && imageData.length === 0) {
+        throw new Error("Failed to process any images. Please try different files.");
+      }
+      
+      console.log(`Successfully processed ${imageData.length} of ${images.length} images`);
 
       // Call the edge function to send email with images
       const { data, error } = await supabase.functions.invoke("send-quote-email", {

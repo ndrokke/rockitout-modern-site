@@ -67,8 +67,25 @@ const handler = async (req: Request): Promise<Response> => {
       
       for (const [index, image] of quoteData.images.entries()) {
         try {
+          // Validate image data exists and is a proper data URL
+          if (!image.data || typeof image.data !== 'string') {
+            console.error(`Image ${index + 1} has null or invalid data, skipping`);
+            continue;
+          }
+          
+          if (!image.data.includes(',')) {
+            console.error(`Image ${index + 1} is not a valid data URL (missing comma), skipping`);
+            continue;
+          }
+          
           // Extract base64 data from data URL
           const base64Data = image.data.split(',')[1];
+          
+          if (!base64Data) {
+            console.error(`Image ${index + 1} has no base64 data after comma, skipping`);
+            continue;
+          }
+          
           const buffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
           
           // Generate unique filename
