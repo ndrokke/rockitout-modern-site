@@ -51,59 +51,71 @@ const Contact = () => {
 
       console.log("Sending quote request...", validatedData);
 
-      // Convert images to base64 for sending to edge function
-      const imageDataPromises = images.map(async (file) => {
-        try {
-          const base64 = await new Promise<string | null>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const result = reader.result as string;
-              // Validate that we got a proper data URL
-              if (result && result.startsWith('data:')) {
-                console.log(`Successfully converted ${file.name} to base64`);
-                resolve(result);
-              } else {
-                console.error(`Invalid data URL for ${file.name}`);
-                reject(new Error(`Failed to convert ${file.name}`));
-              }
-            };
-            reader.onerror = () => {
-              console.error(`FileReader error for ${file.name}:`, reader.error);
-              reject(reader.error || new Error(`Failed to read ${file.name}`));
-            };
-            reader.readAsDataURL(file);
-          });
-          
-          return base64 ? {
-            name: file.name,
-            type: file.type,
-            data: base64
-          } : null;
-        } catch (error) {
-          console.error(`Error converting ${file.name}:`, error);
-          toast({
-            title: "Image Upload Warning",
-            description: `${file.name} could not be processed and will be skipped.`,
-            variant: "destructive"
-          });
-          return null;
+      // Upload images directly to storage and get URLs
+      const uploadedImages: Array<{ name: string; url: string }> = [];
+      
+      if (images.length > 0) {
+        console.log(`Uploading ${images.length} images to storage...`);
+        
+        for (const file of images) {
+          try {
+            // Generate unique filename
+            const timestamp = Date.now();
+            const randomId = crypto.randomUUID();
+            const fileName = `quote-${timestamp}-${randomId}-${file.name}`;
+            const filePath = `public/${fileName}`;
+            
+            // Upload to storage
+            const { error: uploadError } = await supabase.storage
+              .from('quote-images')
+              .upload(filePath, file, {
+                contentType: file.type,
+                upsert: false
+              });
+            
+            if (uploadError) {
+              console.error(`Error uploading ${file.name}:`, uploadError);
+              toast({
+                title: "Upload Warning",
+                description: `${file.name} could not be uploaded and will be skipped.`,
+                variant: "destructive"
+              });
+              continue;
+            }
+            
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+              .from('quote-images')
+              .getPublicUrl(filePath);
+            
+            uploadedImages.push({
+              name: file.name,
+              url: publicUrl
+            });
+            
+            console.log(`Successfully uploaded ${file.name}`);
+          } catch (error) {
+            console.error(`Error processing ${file.name}:`, error);
+            toast({
+              title: "Upload Warning",
+              description: `${file.name} could not be processed and will be skipped.`,
+              variant: "destructive"
+            });
+          }
         }
-      });
-      
-      const imageDataResults = await Promise.all(imageDataPromises);
-      const imageData = imageDataResults.filter((img): img is NonNullable<typeof img> => img !== null);
-      
-      if (images.length > 0 && imageData.length === 0) {
-        throw new Error("Failed to process any images. Please try different files.");
+        
+        if (images.length > 0 && uploadedImages.length === 0) {
+          throw new Error("Failed to upload any images. Please try again.");
+        }
+        
+        console.log(`Successfully uploaded ${uploadedImages.length} of ${images.length} images`);
       }
-      
-      console.log(`Successfully processed ${imageData.length} of ${images.length} images`);
 
-      // Call the edge function to send email with images
+      // Call the edge function to send email with image URLs
       const { data, error } = await supabase.functions.invoke("send-quote-email", {
         body: {
           ...validatedData,
-          images: imageData
+          images: uploadedImages
         },
       });
 

@@ -20,8 +20,7 @@ const corsHeaders = {
 
 interface ImageData {
   name: string;
-  type: string;
-  data: string; // base64 data URL
+  url: string; // public URL from storage
 }
 
 interface QuoteRequest {
@@ -58,73 +57,12 @@ const handler = async (req: Request): Promise<Response> => {
       ? quoteData.service.charAt(0).toUpperCase() + quoteData.service.slice(1).replace(/-/g, ' ')
       : "Not specified";
 
-    // Upload images to storage and get public URLs
+    // Images are already uploaded to storage, just use the URLs
     const imageUrls: string[] = [];
-    const attachments: Array<{ filename: string; content: string }> = [];
     
     if (quoteData.images && quoteData.images.length > 0) {
-      console.log(`Processing ${quoteData.images.length} images...`);
-      
-      for (const [index, image] of quoteData.images.entries()) {
-        try {
-          // Validate image data exists and is a proper data URL
-          if (!image.data || typeof image.data !== 'string') {
-            console.error(`Image ${index + 1} has null or invalid data, skipping`);
-            continue;
-          }
-          
-          if (!image.data.includes(',')) {
-            console.error(`Image ${index + 1} is not a valid data URL (missing comma), skipping`);
-            continue;
-          }
-          
-          // Extract base64 data from data URL
-          const base64Data = image.data.split(',')[1];
-          
-          if (!base64Data) {
-            console.error(`Image ${index + 1} has no base64 data after comma, skipping`);
-            continue;
-          }
-          
-          const buffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-          
-          // Generate unique filename
-          const timestamp = Date.now();
-          const randomId = crypto.randomUUID();
-          const fileName = `quote-${timestamp}-${randomId}-${image.name}`;
-          const filePath = `public/${fileName}`;
-          
-          // Upload to Supabase Storage
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('quote-images')
-            .upload(filePath, buffer, {
-              contentType: image.type,
-              upsert: false
-            });
-          
-          if (uploadError) {
-            console.error(`Error uploading image ${index + 1}:`, uploadError);
-            continue;
-          }
-          
-          // Get public URL
-          const { data: { publicUrl } } = supabase.storage
-            .from('quote-images')
-            .getPublicUrl(filePath);
-          
-          imageUrls.push(publicUrl);
-          
-          // Add to attachments for email
-          attachments.push({
-            filename: image.name,
-            content: base64Data
-          });
-          
-          console.log(`Image ${index + 1} uploaded successfully:`, fileName);
-        } catch (imgError) {
-          console.error(`Error processing image ${index + 1}:`, imgError);
-        }
-      }
+      console.log(`Using ${quoteData.images.length} pre-uploaded images...`);
+      imageUrls.push(...quoteData.images.map(img => img.url));
     }
 
     // Generate image gallery HTML for emails
@@ -185,7 +123,6 @@ const handler = async (req: Request): Promise<Response> => {
       subject: `New Quote Request from ${quoteData.name} - ${serviceDisplay}`,
       html: businessEmailHtml,
       replyTo: quoteData.email || undefined,
-      attachments: attachments.length > 0 ? attachments : undefined,
     });
 
     if (businessEmail.error) {
