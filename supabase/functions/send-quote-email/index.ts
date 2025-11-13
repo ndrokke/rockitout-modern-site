@@ -1,7 +1,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+);
 
 const emailFrom = Deno.env.get('EMAIL_FROM') || 'onboarding@resend.dev';
 const emailBusinessTo = Deno.env.get('EMAIL_BUSINESS_TO') || 'quotes@rockitoutdrywall.com';
@@ -12,6 +18,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface ImageData {
+  name: string;
+  type: string;
+  data: string; // base64 data URL
+}
+
 interface QuoteRequest {
   name: string;
   phone: string;
@@ -19,6 +31,7 @@ interface QuoteRequest {
   service: string;
   location: string;
   message: string;
+  images?: ImageData[];
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -45,6 +58,72 @@ const handler = async (req: Request): Promise<Response> => {
       ? quoteData.service.charAt(0).toUpperCase() + quoteData.service.slice(1).replace(/-/g, ' ')
       : "Not specified";
 
+    // Upload images to storage and get public URLs
+    const imageUrls: string[] = [];
+    const attachments: Array<{ filename: string; content: string }> = [];
+    
+    if (quoteData.images && quoteData.images.length > 0) {
+      console.log(`Processing ${quoteData.images.length} images...`);
+      
+      for (const [index, image] of quoteData.images.entries()) {
+        try {
+          // Extract base64 data from data URL
+          const base64Data = image.data.split(',')[1];
+          const buffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+          
+          // Generate unique filename
+          const timestamp = Date.now();
+          const randomId = crypto.randomUUID();
+          const fileName = `quote-${timestamp}-${randomId}-${image.name}`;
+          const filePath = `public/${fileName}`;
+          
+          // Upload to Supabase Storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('quote-images')
+            .upload(filePath, buffer, {
+              contentType: image.type,
+              upsert: false
+            });
+          
+          if (uploadError) {
+            console.error(`Error uploading image ${index + 1}:`, uploadError);
+            continue;
+          }
+          
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('quote-images')
+            .getPublicUrl(filePath);
+          
+          imageUrls.push(publicUrl);
+          
+          // Add to attachments for email
+          attachments.push({
+            filename: image.name,
+            content: base64Data
+          });
+          
+          console.log(`Image ${index + 1} uploaded successfully:`, fileName);
+        } catch (imgError) {
+          console.error(`Error processing image ${index + 1}:`, imgError);
+        }
+      }
+    }
+
+    // Generate image gallery HTML for emails
+    const imageGalleryHtml = imageUrls.length > 0 ? `
+      <div style="margin: 20px 0;">
+        <h3 style="color: #555;">Project Images (${imageUrls.length})</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+          ${imageUrls.map(url => `
+            <div style="border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
+              <img src="${url}" alt="Project image" style="width: 100%; height: auto; display: block;" />
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
+
     // Send email to business
     const businessEmailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -65,6 +144,8 @@ const handler = async (req: Request): Promise<Response> => {
           <h2 style="color: #555; margin-top: 0;">Project Details</h2>
           <p style="white-space: pre-wrap;">${quoteData.message}</p>
         </div>
+
+        ${imageGalleryHtml}
 
         <div style="margin-top: 20px; padding: 15px; background-color: #fffbcc; border-left: 4px solid #ffeb3b; border-radius: 3px;">
           <p style="margin: 0; color: #666;">
@@ -87,6 +168,7 @@ const handler = async (req: Request): Promise<Response> => {
       subject: `New Quote Request from ${quoteData.name} - ${serviceDisplay}`,
       html: businessEmailHtml,
       replyTo: quoteData.email || undefined,
+      attachments: attachments.length > 0 ? attachments : undefined,
     });
 
     if (businessEmail.error) {
@@ -124,6 +206,8 @@ const handler = async (req: Request): Promise<Response> => {
             <p><strong>Location:</strong> ${quoteData.location}</p>
             <p style="white-space: pre-wrap;"><strong>Details:</strong> ${quoteData.message}</p>
           </div>
+
+          ${imageGalleryHtml}
 
           <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <p style="margin: 0; color: #856404;">

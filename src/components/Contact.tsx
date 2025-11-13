@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Phone, MapPin, Clock, Loader2 } from "lucide-react";
+import { Phone, MapPin, Clock, Loader2, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
@@ -21,6 +21,7 @@ const quoteSchema = z.object({
 const Contact = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -38,11 +39,40 @@ const Contact = () => {
       // Validate form data using Zod
       const validatedData = quoteSchema.parse(formData);
 
+      // Validate images
+      if (images.length > 5) {
+        throw new Error("Maximum 5 images allowed");
+      }
+      
+      const totalSize = images.reduce((sum, img) => sum + img.size, 0);
+      if (totalSize > 25 * 1024 * 1024) { // 25MB total
+        throw new Error("Total image size must be under 25MB");
+      }
+
       console.log("Sending quote request...", validatedData);
 
-      // Call the edge function to send email
+      // Convert images to base64 for sending to edge function
+      const imageData = await Promise.all(
+        images.map(async (file) => {
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+          return {
+            name: file.name,
+            type: file.type,
+            data: base64
+          };
+        })
+      );
+
+      // Call the edge function to send email with images
       const { data, error } = await supabase.functions.invoke("send-quote-email", {
-        body: validatedData,
+        body: {
+          ...validatedData,
+          images: imageData
+        },
       });
 
       if (error) {
@@ -66,6 +96,7 @@ const Contact = () => {
         location: "",
         message: ""
       });
+      setImages([]);
     } catch (error: any) {
       console.error("Error submitting form:", error);
       
@@ -95,6 +126,37 @@ const Contact = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => {
+      const isValidType = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type);
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB per file
+      
+      if (!isValidType) {
+        toast({
+          title: "Invalid File Type",
+          description: `${file.name} is not a supported image format. Please use JPG, PNG, or WebP.`,
+          variant: "destructive"
+        });
+      }
+      if (!isValidSize) {
+        toast({
+          title: "File Too Large",
+          description: `${file.name} exceeds 5MB limit.`,
+          variant: "destructive"
+        });
+      }
+      
+      return isValidType && isValidSize;
+    });
+
+    setImages(prev => [...prev, ...validFiles].slice(0, 5));
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -264,7 +326,59 @@ const Contact = () => {
                     />
                   </div>
 
-                  <Button 
+                  <div>
+                    <Label htmlFor="images">Project Images (Optional)</Label>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Upload up to 5 images (JPG, PNG, WebP, max 5MB each)
+                    </p>
+                    <div className="mt-1">
+                      <input
+                        id="images"
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        multiple
+                        onChange={handleImageChange}
+                        disabled={images.length >= 5}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('images')?.click()}
+                        disabled={images.length >= 5}
+                        className="w-full"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {images.length >= 5 ? 'Maximum 5 Images' : 'Upload Images'}
+                      </Button>
+                    </div>
+                    
+                    {images.length > 0 && (
+                      <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {images.map((image, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={URL.createObjectURL(image)}
+                              alt={`Upload ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-md border border-border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                            <p className="text-xs text-muted-foreground mt-1 truncate">
+                              {image.name}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <Button
                     type="submit" 
                     disabled={isSubmitting}
                     className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3"
