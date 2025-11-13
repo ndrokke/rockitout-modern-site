@@ -21,15 +21,8 @@ export const OptimizedImage = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  // Generate WebP version path (Vite will handle conversion in production)
-  const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, ".webp");
-
   return (
-    <picture className={cn("relative", className)}>
-      {/* WebP version for modern browsers */}
-      <source srcSet={webpSrc} type="image/webp" />
-      
-      {/* Fallback to original format */}
+    <div className={cn("relative", className)}>
       <img
         src={src}
         alt={alt}
@@ -54,6 +47,6 @@ export const OptimizedImage = ({
       {!isLoaded && !hasError && (
         <div className="absolute inset-0 bg-muted animate-pulse rounded" />
       )}
-    </picture>
+    </div>
   );
 };
