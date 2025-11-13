@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { X } from "lucide-react";
-import IMG1 from "@/assets/IMG_1.jpg";
-import IMG2 from "@/assets/IMG_2.jpg";
-import IMG3 from "@/assets/IMG_3.jpg";
-import IMG4 from "@/assets/IMG_4.jpg";
+import IMG1 from "@/assets/bathroom-ceiling-drywall-installation.jpg";
+import IMG2 from "@/assets/commercial-ceiling-angular-drywall.jpg";
+import IMG3 from "@/assets/raised-ceiling-recessed-lighting.jpg";
+import IMG4 from "@/assets/electrical-outlet-drywall-cutouts.jpg";
 
 const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
