@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { X } from "lucide-react";
 import IMG1 from "@/assets/IMG_1.jpg";
 import IMG2 from "@/assets/IMG_2.jpg";
@@ -51,7 +52,7 @@ const Gallery = () => {
               onClick={() => setSelectedImage(project.image)}
             >
               <div className="relative overflow-hidden">
-                <img
+                <OptimizedImage
                   src={project.image}
                   alt={project.title}
                   className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
@@ -90,7 +91,12 @@ const Gallery = () => {
               <X className="h-5 w-5" />
             </button>
             {selectedImage && (
-              <img src={selectedImage} alt="Gallery image" className="w-full h-auto max-h-[80vh] object-contain" />
+              <OptimizedImage 
+                src={selectedImage} 
+                alt="Gallery image" 
+                className="w-full h-auto max-h-[80vh] object-contain"
+                priority
+              />
             )}
           </div>
         </DialogContent>
