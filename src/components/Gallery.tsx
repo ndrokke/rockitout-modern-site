@@ -13,23 +13,23 @@ const Gallery = () => {
   const projects = [
     {
       image: IMG1,
-      title: "Custom Drywall for Bathroom Fans and Light Fixtures",
-      description: "Custom drywall renovation showing professional finish quality.",
+      title: "Professional Bathroom Ceiling Drywall Installation with Fan and Light Fixtures",
+      description: "Expert custom drywall finishing for bathroom ceiling featuring precision cutouts for ventilation fans and recessed lighting fixtures. Seamless texture application and professional-grade installation.",
     },
     {
       image: IMG2,
-      title: "Commercial Drywall Ceiling with Angled Finish",
-      description: "Professional, clean application for commercial ceiling project.",
+      title: "Commercial Drywall Ceiling Installation with Angular Design",
+      description: "High-quality commercial drywall ceiling installation showcasing precise angled finishes and clean lines. Professional taping, mudding, and smooth finish for modern commercial spaces.",
     },
     {
       image: IMG3,
-      title: "Raised Ceiling with Light Fixtures",
-      description: "Smooth drywall installation in modern residential space with perfect finish.",
+      title: "Raised Ceiling Drywall Renovation with Recessed Lighting",
+      description: "Modern residential ceiling drywall project featuring raised design with integrated recessed lighting. Flawless finish, expert taping, and smooth texture application for contemporary living spaces.",
     },
     {
       image: IMG4,
-      title: "Drywall with Multiple Outlets",
-      description: "Expert drywall cut for outlets that blends perfectly with existing wall surface.",
+      title: "Precision Electrical Outlet Drywall Cutouts and Finishing",
+      description: "Expert drywall installation with multiple precision electrical outlet cutouts. Clean edges, seamless wall finish, and professional-grade taping that integrates perfectly with existing surfaces.",
     },
   ];
 
